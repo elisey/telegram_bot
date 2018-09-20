@@ -17,6 +17,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 import users
 import quotes
+import time
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -69,7 +70,30 @@ def it(bot, update):
 
     users.setUserLastQuoteIndex(userId, quoteIndex + 1)
     update.message.reply_text("#" + str(quoteIndex) + text)
+
+def itmore(bot, update):
+    userId = update.message.from_user.id
+    print("Message")
+    print(update.message.text)
+    print("User")
+    print(update.message.from_user)
     
+    if users.isUserExist(userId) == False:
+        users.createNewUser(userId, 1, update.message.from_user.username)
+    
+    quoteIndex = users.getUserLastQuoteIndex(userId)
+    numOfQuotes = 10
+        
+    for _ in range(0, numOfQuotes):
+        if quotes.isQuoteExist(quoteIndex):
+            text = quotes.getQuote(quoteIndex)
+        else:
+            text = "Empty"
+
+        users.setUserLastQuoteIndex(userId, quoteIndex + 1)
+        update.message.reply_text("#" + str(quoteIndex) + text)
+        quoteIndex = quoteIndex + 1
+        time.sleep(1)
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
@@ -95,6 +119,7 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("it", it))
+    dp.add_handler(CommandHandler("itmore", itmore))
 
     # log all errors
     dp.add_error_handler(error)
